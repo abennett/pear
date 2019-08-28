@@ -1,0 +1,87 @@
+package main
+
+import (
+	"encoding/json"
+	"errors"
+	"io/ioutil"
+	"net/http"
+	"net/url"
+
+	"github.com/go-chi/chi"
+	"github.com/go-chi/chi/middleware"
+	"github.com/nlopes/slack"
+)
+
+const (
+	ApplicationJson = "application/json"
+)
+
+func NewRouter(pear *PearService) *chi.Mux {
+	r := chi.NewRouter()
+	r.Use(middleware.RealIP)
+	r.Use(middleware.Logger)
+	r.Use(pear.VerifyRequest)
+
+	r.Post("/new", HandleNew(pear))
+	r.Post("/submit", HandleSubmit(pear))
+
+	return r
+}
+
+func HandleNew(pear *PearService) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		s, err := slack.SlashCommandParse(r)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		msg, err := pear.HandleNew(s)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		b, err := json.Marshal(msg)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		w.Header().Set("Content-Type", ApplicationJson)
+		w.Write(b)
+		return
+	}
+}
+
+func ExtractInteraction(r *http.Request) (*slack.InteractionCallback, error) {
+	b, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		return nil, err
+	}
+	vals, err := url.ParseQuery(string(b))
+	if err != nil {
+		return nil, err
+	}
+	payload, ok := vals["payload"]
+	if !ok {
+		return nil, errors.New("missing payload")
+	}
+	var interaction slack.InteractionCallback
+	if err = json.Unmarshal([]byte(payload[0]), &interaction); err != nil {
+		return nil, errors.New("unable to unmarshal interaction")
+	}
+	return &interaction, nil
+}
+
+func HandleSubmit(pear *PearService) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		interaction, err := ExtractInteraction(r)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		err = pear.HandleSubmit(interaction)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	}
+}
