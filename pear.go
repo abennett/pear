@@ -169,6 +169,9 @@ func (ps *PearService) submitSeed(ic *slack.InteractionCallback) (*Seed, error) 
 		Planted: time.Now(),
 		Topic:   ic.ActionCallback.BlockActions[0].Value,
 	}
+	if seed.Topic == "" {
+		return nil, errors.New("topic required")
+	}
 	id, err := ps.PlantSeed(seed)
 	seed.ID = id
 	if err != nil {
