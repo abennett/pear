@@ -28,6 +28,16 @@ func NewRouter(pear *PearService) *chi.Mux {
 	return r
 }
 
+func WriteMsg(w http.ResponseWriter, msg slack.Msg) error {
+	b, err := json.Marshal(msg)
+	if err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", ApplicationJson)
+	_, err = w.Write(b)
+	return err
+}
+
 func HandleNew(pear *PearService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		s, err := slack.SlashCommandParse(r)
@@ -40,13 +50,10 @@ func HandleNew(pear *PearService) http.HandlerFunc {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		b, err := json.Marshal(msg)
-		if err != nil {
+		if err = WriteMsg(w, msg); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		w.Header().Set("Content-Type", ApplicationJson)
-		w.Write(b)
 		return
 	}
 }
@@ -83,5 +90,6 @@ func HandleSubmit(pear *PearService) http.HandlerFunc {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
+		return
 	}
 }
