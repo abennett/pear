@@ -115,7 +115,7 @@ func (ps *PearService) ListResponse(user string) (slack.Msg, error) {
 func formatPearJoins(pjs []*PearJoin) string {
 	var output strings.Builder
 	for _, pj := range pjs {
-		output.WriteString(fmt.Sprintf("%s: %s @%s\b", pj.Sower, pj.Topic, pj.Picked))
+		output.WriteString(fmt.Sprintf("<@%s>: %s on <!date^%d^{date_short} at {time}|%s>\n", pj.Sower, pj.Topic, pj.Picked.Unix(), pj.Picked.Format(time.RFC822)))
 	}
 	return output.String()
 }
