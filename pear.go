@@ -51,7 +51,7 @@ type Pear struct {
 
 type PearJoin struct {
 	Sower  string    `db:"sower"`
-	Picker string    `db:"seed_id"`
+	Picker string    `db:"picker"`
 	Topic  string    `db:"topic"`
 	Picked time.Time `db:"picked"`
 }
