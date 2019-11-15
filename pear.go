@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/hashicorp/go-hclog"
@@ -48,6 +49,13 @@ type Pear struct {
 	Picked time.Time `db:"picked"`
 }
 
+type PearJoin struct {
+	Sower  string    `db:"sower"`
+	Picker string    `db:"seed_id"`
+	Topic  string    `db:"topic"`
+	Picked time.Time `db:"picked"`
+}
+
 func NewPearService(conf *Config, logger hclog.Logger) *PearService {
 	db, err := InitPG(conf.DatabaseUrl)
 	if err != nil {
@@ -85,7 +93,40 @@ func (ps *PearService) VerifyRequest(next http.Handler) http.Handler {
 }
 
 func (ps *PearService) HandleNew(sc slack.SlashCommand) (slack.Msg, error) {
+	if sc.Text == "list" {
+		return ps.ListResponse(sc.UserID)
+	}
 	return SlashResponse(sc.Text), nil
+}
+
+func (ps *PearService) ListResponse(user string) (slack.Msg, error) {
+	pjs, err := ps.ListPearJoins(user)
+	if err != nil {
+		return slack.Msg{}, err
+	}
+	output := fmt.Sprintf("You have picked %d pears!\n", len(pjs))
+	output = output + formatPearJoins(pjs)
+	outputText := slack.NewTextBlockObject(slack.MarkdownType, output, false, false)
+	outputSection := slack.NewSectionBlock(outputText, nil, nil)
+	msg := slack.NewBlockMessage(outputSection)
+	return msg.Msg, nil
+}
+
+func formatPearJoins(pjs []*PearJoin) string {
+	var output strings.Builder
+	for _, pj := range pjs {
+		output.WriteString(fmt.Sprintf("%s: %s @%s\b", pj.Sower, pj.Topic, pj.Picked))
+	}
+	return output.String()
+}
+
+func (ps *PearService) ListPearJoins(user string) ([]*PearJoin, error) {
+	var pjs []*PearJoin
+	err := ps.db.Select("SELECT picker, sower, topic, picked FROM seed JOIN pear ON seed.id = pear.seed_id WHERE picker = ?", user, &pjs)
+	if err != nil {
+		return nil, err
+	}
+	return pjs, nil
 }
 
 func (ps *PearService) HandleSubmit(ic *slack.InteractionCallback) error {
@@ -183,12 +224,10 @@ func (ps *PearService) submitSeed(ic *slack.InteractionCallback) (*Seed, error) 
 func seedPlantedMsg() slack.Msg {
 	headerText := slack.NewTextBlockObject(slack.MarkdownType, "Pear seed planted! :seedling:", false, false)
 	headerSection := slack.NewSectionBlock(headerText, nil, nil)
-	blocks := CombineBlocks(headerSection)
-	return slack.Msg{
-		ResponseType:    "ephemeral",
-		ReplaceOriginal: true,
-		Blocks:          blocks,
-	}
+	msg := slack.NewBlockMessage(headerSection)
+	msg.ResponseType = slack.ResponseTypeEphemeral
+	msg.ReplaceOriginal = true
+	return msg.Msg
 }
 
 func (ps *PearService) FetchSeed(id int) (*Seed, error) {
@@ -273,11 +312,9 @@ func formatPickResponse(ic *slack.InteractionCallback) (slack.Msg, error) {
 	}
 
 	sectionBlock := slack.NewSectionBlock(msgText, nil, nil)
-	blocks := CombineBlocks(sectionBlock, contextBlock)
-	return slack.Msg{
-		ReplaceOriginal: true,
-		Blocks:          blocks,
-	}, nil
+	msg := slack.NewBlockMessage(sectionBlock, contextBlock)
+	msg.ReplaceOriginal = true
+	return msg.Msg, nil
 }
 
 func (ps *PearService) StorePear(pear *Pear) (int, error) {
@@ -307,16 +344,8 @@ func SlashResponse(text string) slack.Msg {
 
 	actionBlock := slack.NewActionBlock(SeedBlock, submitBtn, cancelBtn)
 
-	blocks := CombineBlocks(headerSection, actionBlock)
+	msg := slack.NewBlockMessage(headerSection, actionBlock)
+	msg.ResponseType = slack.ResponseTypeEphemeral
 
-	return slack.Msg{
-		ResponseType: "ephemeral",
-		Blocks:       blocks,
-	}
-}
-
-func CombineBlocks(blocks ...slack.Block) slack.Blocks {
-	return slack.Blocks{
-		BlockSet: blocks,
-	}
+	return msg.Msg
 }
