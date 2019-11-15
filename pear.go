@@ -26,10 +26,6 @@ const (
 	PickPear  = "pick-pear"
 )
 
-var (
-	ErrInvalidToken = errors.New("slack token is invalid")
-)
-
 type PearService struct {
 	client  *slack.Client
 	db      *sqlx.DB
@@ -271,6 +267,8 @@ func formatPickResponse(ic *slack.InteractionCallback) (slack.Msg, error) {
 			msgText = section.Text
 			break
 		}
+	}
+	if msgText == nil {
 		return slack.Msg{}, errors.New("unable to find sectionBlock")
 	}
 
@@ -296,13 +294,13 @@ func (ps *PearService) StorePear(pear *Pear) (int, error) {
 	return id, nil
 }
 
-func SlashResponse(topic string) slack.Msg {
-	resp := fmt.Sprintf("Do you want to learn *%s*?", topic)
+func SlashResponse(text string) slack.Msg {
+	resp := fmt.Sprintf("Do you want to learn *%s*?", text)
 	headerText := slack.NewTextBlockObject(slack.MarkdownType, resp, false, false)
 	headerSection := slack.NewSectionBlock(headerText, nil, nil)
 
 	submitBtnText := slack.NewTextBlockObject(slack.PlainTextType, "Yes", false, false)
-	submitBtn := slack.NewButtonBlockElement(SeedSubmit, topic, submitBtnText)
+	submitBtn := slack.NewButtonBlockElement(SeedSubmit, text, submitBtnText)
 
 	cancelBtnText := slack.NewTextBlockObject(slack.PlainTextType, "Cancel", false, false)
 	cancelBtn := slack.NewButtonBlockElement(SeedCancel, "cancel", cancelBtnText)
@@ -320,13 +318,5 @@ func SlashResponse(topic string) slack.Msg {
 func CombineBlocks(blocks ...slack.Block) slack.Blocks {
 	return slack.Blocks{
 		BlockSet: blocks,
-	}
-}
-
-func HarvestSeed(sc slack.SlashCommand) *Seed {
-	return &Seed{
-		Sower:   sc.UserID,
-		Topic:   sc.Text,
-		Planted: time.Now(),
 	}
 }
