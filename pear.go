@@ -124,7 +124,7 @@ func (ps *PearService) ListPearJoins(user string) ([]*PearJoin, error) {
 	var pjs []*PearJoin
 	err := ps.db.Select(&pjs, "SELECT picker, sower, topic, picked FROM seed JOIN pear ON seed.id = pear.seed_id WHERE picker = ?", user)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error selecting pear join: %w", err)
 	}
 	return pjs, nil
 }
