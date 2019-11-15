@@ -104,7 +104,12 @@ func (ps *PearService) ListResponse(user string) (slack.Msg, error) {
 	if err != nil {
 		return slack.Msg{}, err
 	}
-	output := fmt.Sprintf("You have picked %d pears!\n", len(pjs))
+	var output string
+	if len(pjs) == 1 {
+		output = "You have picked 1 pear!\n"
+	} else {
+		output = fmt.Sprintf("You have picked %d pears!\n", len(pjs))
+	}
 	output = output + formatPearJoins(pjs)
 	outputText := slack.NewTextBlockObject(slack.MarkdownType, output, false, false)
 	outputSection := slack.NewSectionBlock(outputText, nil, nil)
