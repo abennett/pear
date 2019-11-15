@@ -9,6 +9,7 @@ import (
 
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
+	"github.com/hashicorp/go-hclog"
 	"github.com/nlopes/slack"
 )
 
@@ -42,16 +43,16 @@ func HandleNew(pear *PearService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		s, err := slack.SlashCommandParse(r)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+			errorWrapper(w, err, http.StatusBadRequest)
 			return
 		}
 		msg, err := pear.HandleNew(s)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			errorWrapper(w, err, http.StatusInternalServerError)
 			return
 		}
 		if err = WriteMsg(w, msg); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			errorWrapper(w, err, http.StatusInternalServerError)
 			return
 		}
 		return
@@ -82,14 +83,20 @@ func HandleSubmit(pear *PearService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		interaction, err := ExtractInteraction(r)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+			errorWrapper(w, err, http.StatusBadRequest)
 			return
 		}
 		err = pear.HandleSubmit(interaction)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			errorWrapper(w, err, http.StatusInternalServerError)
 			return
 		}
 		return
 	}
+}
+
+func errorWrapper(w http.ResponseWriter, err error, code int) {
+	hclog.Default().Error(err.Error())
+	http.Error(w, err.Error(), code)
+	return
 }
