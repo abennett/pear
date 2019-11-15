@@ -122,7 +122,7 @@ func formatPearJoins(pjs []*PearJoin) string {
 
 func (ps *PearService) ListPearJoins(user string) ([]*PearJoin, error) {
 	var pjs []*PearJoin
-	err := ps.db.Select(&pjs, "SELECT picker, sower, topic, picked FROM seed JOIN pear ON seed.id = pear.seed_id WHERE picker = ?", user)
+	err := ps.db.Select(&pjs, "SELECT picker, sower, topic, picked FROM seed JOIN pear ON seed.id = pear.seed_id WHERE picker = $1", user)
 	if err != nil {
 		return nil, fmt.Errorf("error selecting pear join: %w", err)
 	}
