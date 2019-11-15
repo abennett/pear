@@ -19,5 +19,5 @@ func main() {
 	pear := NewPearService(conf, logger)
 	r := NewRouter(pear)
 	logger.Info("starting webserver on :3333")
-	http.ListenAndServe(":3333", r)
+	http.ListenAndServe(":"+conf.Port, r)
 }

@@ -14,6 +14,7 @@ type Config struct {
 	SlackToken  string `env:"SLACK_TOKEN,required"`
 	Channel     string `env:"SLACK_CHANNEL,required"`
 	DatabaseUrl string `env:"DATABASE_URL,required"`
+	Port        string `env:"PORT,required"`
 }
 
 func NewConfig() (*Config, error) {
