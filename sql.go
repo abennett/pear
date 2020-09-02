@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/golang-migrate/migrate/v4"
-	"github.com/golang-migrate/migrate/v4/database/stub"
+	"github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/hashicorp/go-hclog"
 	_ "github.com/jackc/pgx/stdlib"
@@ -28,7 +28,7 @@ func InitPG(url string, logger hclog.Logger) (*sqlx.DB, error) {
 }
 
 func migrateDB(db *sqlx.DB) error {
-	driver, err := stub.WithInstance(db.DB, &stub.Config{})
+	driver, err := postgres.WithInstance(db.DB, &postgres.Config{})
 	if err != nil {
 		return err
 	}

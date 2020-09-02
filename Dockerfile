@@ -14,7 +14,7 @@ COPY *.go ./
 
 RUN CGO_ENABLED=0 go build -trimpath -ldflags="-w -s"
 
-FROM scratch
+FROM alpine
 
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=builder /build/pear .
