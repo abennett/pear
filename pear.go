@@ -13,7 +13,7 @@ import (
 
 	"github.com/hashicorp/go-hclog"
 	"github.com/jmoiron/sqlx"
-	"github.com/nlopes/slack"
+	"github.com/slack-go/slack"
 )
 
 const (
