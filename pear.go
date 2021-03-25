@@ -13,7 +13,7 @@ import (
 
 	"github.com/hashicorp/go-hclog"
 	"github.com/jmoiron/sqlx"
-	"github.com/nlopes/slack"
+	"github.com/slack-go/slack"
 )
 
 const (
@@ -56,10 +56,10 @@ type PearJoin struct {
 	Picked time.Time `db:"picked"`
 }
 
-func NewPearService(conf *Config, logger hclog.Logger) *PearService {
-	db, err := InitPG(conf.DatabaseUrl)
+func NewPearService(conf *Config, logger hclog.Logger) (*PearService, error) {
+	db, err := InitPG(conf.DatabaseUrl, logger)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 	return &PearService{
 		client:  slack.New(conf.SlackToken),
@@ -67,7 +67,7 @@ func NewPearService(conf *Config, logger hclog.Logger) *PearService {
 		db:      db,
 		channel: conf.Channel,
 		logger:  logger,
-	}
+	}, nil
 }
 
 func (ps *PearService) VerifyRequest(next http.Handler) http.Handler {

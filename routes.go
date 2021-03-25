@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -10,7 +11,7 @@ import (
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
 	"github.com/hashicorp/go-hclog"
-	"github.com/nlopes/slack"
+	"github.com/slack-go/slack"
 )
 
 const (
@@ -74,7 +75,7 @@ func ExtractInteraction(r *http.Request) (*slack.InteractionCallback, error) {
 	}
 	var interaction slack.InteractionCallback
 	if err = json.Unmarshal([]byte(payload[0]), &interaction); err != nil {
-		return nil, errors.New("unable to unmarshal interaction")
+		return nil, fmt.Errorf("unable to unmarshal interaction: %w", err))
 	}
 	return &interaction, nil
 }
