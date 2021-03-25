@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -74,7 +75,7 @@ func ExtractInteraction(r *http.Request) (*slack.InteractionCallback, error) {
 	}
 	var interaction slack.InteractionCallback
 	if err = json.Unmarshal([]byte(payload[0]), &interaction); err != nil {
-		return nil, errors.New("unable to unmarshal interaction")
+		return nil, errors.New(fmt.Sprintf("unable to unmarshal interaction: %s", err))
 	}
 	return &interaction, nil
 }
