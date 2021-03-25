@@ -11,7 +11,7 @@ import (
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
 	"github.com/hashicorp/go-hclog"
-	"github.com/nlopes/slack"
+	"github.com/slack-go/slack"
 )
 
 const (
