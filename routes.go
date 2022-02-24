@@ -75,7 +75,7 @@ func ExtractInteraction(r *http.Request) (*slack.InteractionCallback, error) {
 	}
 	var interaction slack.InteractionCallback
 	if err = json.Unmarshal([]byte(payload[0]), &interaction); err != nil {
-		return nil, fmt.Errorf("unable to unmarshal interaction: %w", err))
+		return nil, fmt.Errorf("unable to unmarshal interaction: %w", err)
 	}
 	return &interaction, nil
 }
