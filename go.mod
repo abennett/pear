@@ -13,8 +13,7 @@ require (
 )
 
 require (
-	github.com/Microsoft/go-winio v0.5.2 // indirect
-	github.com/containerd/containerd v1.6.0 // indirect
+	github.com/containerd/containerd v1.6.18 // indirect
 	github.com/dhui/dktest v0.3.9 // indirect
 	github.com/docker/distribution v2.8.0+incompatible // indirect
 	github.com/fatih/color v1.7.0 // indirect
@@ -31,12 +30,11 @@ require (
 	github.com/lib/pq v1.10.2 // indirect
 	github.com/mattn/go-colorable v0.1.6 // indirect
 	github.com/mattn/go-isatty v0.0.12 // indirect
+	github.com/opencontainers/image-spec v1.0.3-0.20211202183452-c5a74bcca799 // indirect
 	go.uber.org/atomic v1.9.0 // indirect
-	golang.org/x/crypto v0.0.0-20210921155107-089bfa567519 // indirect
-	golang.org/x/net v0.0.0-20220127200216-cd36cc0744dd // indirect
-	golang.org/x/sys v0.0.0-20220224120231-95c6836cb0e7 // indirect
+	golang.org/x/crypto v0.0.0-20220315160706-3147a52a75dd // indirect
+	golang.org/x/net v0.0.0-20220722155237-a158d28d115b // indirect
+	golang.org/x/sys v0.0.0-20220722155257-8c9f86f7a55f // indirect
 	golang.org/x/text v0.3.7 // indirect
-	google.golang.org/genproto v0.0.0-20220222213610-43724f9ea8cf // indirect
-	google.golang.org/grpc v1.44.0 // indirect
-	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
